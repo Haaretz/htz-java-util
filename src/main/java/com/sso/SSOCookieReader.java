@@ -61,31 +61,30 @@ public class SSOCookieReader {
 
         String[] fields = cookieValue.split(":");
         for (String field : fields) {
-            String[] parts = field.split("=");
-            if (parts.length == 2) {
-                switch (parts[0]) {
-                    case "userId":
-                        ssoCookie.setUserId(parts[1]);
-                        break;
-                    case "userName":
-                        ssoCookie.setUserMail(parts[1]);
-                        break;
-                    case "ticketId":
-                        ssoCookie.setTicketId(parts[1]);
-                        break;
-                    case "firstName":
-                        ssoCookie.setFirstName(parts[1]);
-                        break;
-                    case "lastName":
-                        ssoCookie.setLastName(parts[1]);
-                        break;
-                    case "emailValidity":
-                        ssoCookie.setEmailValidated(SSOEmailValidity.valueOf(parts[1]));
-                        break;
-                    case "antiAbuseToken":
-                        ssoCookie.setAntiAbuseToken(parts[1]);
-                        break;
-                }
+            String key = field.split("=")[0];
+            String value = field.split("=")[1];
+            switch (key) {
+                case "userId":
+                    ssoCookie.setUserId(value);
+                    break;
+                case "userName":
+                    ssoCookie.setUserMail(value);
+                    break;
+                case "ticketId":
+                    ssoCookie.setTicketId(value);
+                    break;
+                case "firstName":
+                    ssoCookie.setFirstName(value);
+                    break;
+                case "lastName":
+                    ssoCookie.setLastName(value);
+                    break;
+                case "emailValidity":
+                    ssoCookie.setEmailValidated(SSOEmailValidity.valueOf(value));
+                    break;
+                case "antiAbuseToken":
+                    ssoCookie.setAntiAbuseToken(value);
+                    break;
             }
         }
 
