@@ -93,9 +93,9 @@ public class SSOCookieReader {
         for (Cookie cookie : request.getCookies()) {
             if (cookie.getName().endsWith("Pusr")) {
                 ssoCookie.setUserType(paying);
+                break;
             }
         }
-
 
         return ssoCookie;
     }
@@ -105,17 +105,29 @@ public class SSOCookieReader {
         byte[] bytes = Base64.getDecoder().decode(cookieValue);
         cookieValue = new String(bytes, StandardCharsets.UTF_8);
         JSONObject json = new JSONObject(cookieValue);
-        SSOCookie ssoCookie = new SSOCookie();
 
-        ssoCookie.setUserId(json.getString("userId"));
-        ssoCookie.setUserMail(json.getString("userName"));
-        ssoCookie.setTicketId(json.getString("ticketId"));
-        ssoCookie.setFirstName(json.getString("firstName"));
-        ssoCookie.setLastName(json.getString("lastName"));
-        ssoCookie.setEmailValidated(SSOEmailValidity.valueOf(json.getString("emailValidity")));
-        ssoCookie.setAntiAbuseToken(json.getString("antiAbuseToken"));
-        ssoCookie.setUserType(SSOUserType.valueOf(json.getString("userType")));
+        SSOCookie ssoCookie = new SSOCookie();
+        ssoCookie.setUserId(getString(json, "userId"));
+        ssoCookie.setUserMail(getString(json, "userMail"));
+        ssoCookie.setTicketId(getString(json, "ticketId"));
+        ssoCookie.setFirstName(getString(json, "firstName"));
+        ssoCookie.setLastName(getString(json, "lastName"));
+        ssoCookie.setAntiAbuseToken(getString(json, "antiAbuseToken"));
+
+        String emailValidity = getString(json, "emailValidity");
+        if (emailValidity != null) {
+            ssoCookie.setEmailValidated(SSOEmailValidity.valueOf(emailValidity));
+        }
+        String userType = getString(json, "userType");
+        if (userType != null) {
+            ssoCookie.setUserType(SSOUserType.valueOf(userType));
+        }
 
         return ssoCookie;
     }
+
+    private static String getString(JSONObject json, String key) {
+        return json.has(key) ? json.getString(key) : null;
+    }
+
 }
