@@ -1,6 +1,5 @@
 package com.sso;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -8,12 +7,12 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 import org.json.JSONObject;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.sso.SSOCookieReader.CookieNames.sso_token;
-
+import static com.sso.SSOUserType.paying;
+import static com.sso.SSOUserType.registered;
 
 public class SSOCookieReader {
 
@@ -21,10 +20,6 @@ public class SSOCookieReader {
 
     enum CookieNames {
         sso_token, _hs_sso, tmsso, engsso
-    }
-
-    enum UserTypes {
-        paying, registered
     }
 
     public static SSOCookie read(HttpServletRequest request) {
@@ -85,7 +80,7 @@ public class SSOCookieReader {
                         ssoCookie.setLastName(parts[1]);
                         break;
                     case "emailValidity":
-                        ssoCookie.setEmailValidated(parts[1].equalsIgnoreCase("valid"));
+                        ssoCookie.setEmailValidated(SSOEmailValidity.valueOf(parts[1]));
                         break;
                     case "antiAbuseToken":
                         ssoCookie.setAntiAbuseToken(parts[1]);
@@ -94,10 +89,10 @@ public class SSOCookieReader {
             }
         }
 
-        ssoCookie.setUserType(UserTypes.registered.name());
+        ssoCookie.setUserType(registered);
         for (Cookie cookie : request.getCookies()) {
             if (cookie.getName().endsWith("Pusr")) {
-                ssoCookie.setUserType(UserTypes.paying.name());
+                ssoCookie.setUserType(paying);
             }
         }
 
@@ -105,7 +100,7 @@ public class SSOCookieReader {
         return ssoCookie;
     }
 
-    private static SSOCookie parseNewFormat(String cookieValue) throws UnsupportedEncodingException {
+    private static SSOCookie parseNewFormat(String cookieValue) {
 
         byte[] bytes = Base64.getDecoder().decode(cookieValue);
         cookieValue = new String(bytes, StandardCharsets.UTF_8);
@@ -117,9 +112,9 @@ public class SSOCookieReader {
         ssoCookie.setTicketId(json.getString("ticketId"));
         ssoCookie.setFirstName(json.getString("firstName"));
         ssoCookie.setLastName(json.getString("lastName"));
-        ssoCookie.setEmailValidated("valid".equalsIgnoreCase(json.getString("emailValidity")));
+        ssoCookie.setEmailValidated(SSOEmailValidity.valueOf(json.getString("emailValidity")));
         ssoCookie.setAntiAbuseToken(json.getString("antiAbuseToken"));
-        ssoCookie.setUserType(json.getString("userType"));
+        ssoCookie.setUserType(SSOUserType.valueOf(json.getString("userType")));
 
         return ssoCookie;
     }

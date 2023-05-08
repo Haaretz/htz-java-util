@@ -3,9 +3,9 @@ package com.sso;
 public class SSOCookie {
 
     private String userId;
-    private String userType;
+    private SSOUserType userType;
     private String userMail;
-    private Boolean emailValidated;
+    private SSOEmailValidity emailValidated;
     private String firstName;
     private String lastName;
     private String antiAbuseToken;
@@ -19,11 +19,11 @@ public class SSOCookie {
         this.userId = userId;
     }
 
-    public String getUserType() {
+    public SSOUserType getUserType() {
         return userType;
     }
 
-    public void setUserType(String userType) {
+    public void setUserType(SSOUserType userType) {
         this.userType = userType;
     }
 
@@ -35,11 +35,11 @@ public class SSOCookie {
         this.userMail = userMail;
     }
 
-    public Boolean getEmailValidated() {
+    public SSOEmailValidity getEmailValidated() {
         return emailValidated;
     }
 
-    public void setEmailValidated(Boolean emailValidated) {
+    public void setEmailValidated(SSOEmailValidity emailValidated) {
         this.emailValidated = emailValidated;
     }
 
