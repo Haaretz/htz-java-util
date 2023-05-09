@@ -80,7 +80,7 @@ public class SSOCookieReader {
                     ssoCookie.setLastName(value);
                     break;
                 case "emailValidity":
-                    ssoCookie.setEmailValidated(SSOEmailValidity.valueOf(value));
+                    ssoCookie.setEmailValidity(SSOEmailValidity.valueOf(value));
                     break;
                 case "antiAbuseToken":
                     ssoCookie.setAntiAbuseToken(value);
@@ -115,7 +115,7 @@ public class SSOCookieReader {
 
         String emailValidity = getString(json, "emailValidity");
         if (emailValidity != null) {
-            ssoCookie.setEmailValidated(SSOEmailValidity.valueOf(emailValidity));
+            ssoCookie.setEmailValidity(SSOEmailValidity.valueOf(emailValidity));
         }
         String userType = getString(json, "userType");
         if (userType != null) {

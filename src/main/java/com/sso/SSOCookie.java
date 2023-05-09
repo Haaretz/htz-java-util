@@ -5,7 +5,7 @@ public class SSOCookie {
     private String userId;
     private SSOUserType userType;
     private String userMail;
-    private SSOEmailValidity emailValidated;
+    private SSOEmailValidity emailValidity;
     private String firstName;
     private String lastName;
     private String antiAbuseToken;
@@ -15,7 +15,7 @@ public class SSOCookie {
         return userId;
     }
 
-    public void setUserId(String userId) {
+    void setUserId(String userId) {
         this.userId = userId;
     }
 
@@ -23,7 +23,7 @@ public class SSOCookie {
         return userType;
     }
 
-    public void setUserType(SSOUserType userType) {
+    void setUserType(SSOUserType userType) {
         this.userType = userType;
     }
 
@@ -31,23 +31,23 @@ public class SSOCookie {
         return userMail;
     }
 
-    public void setUserMail(String userMail) {
+    void setUserMail(String userMail) {
         this.userMail = userMail;
     }
 
-    public SSOEmailValidity getEmailValidated() {
-        return emailValidated;
+    public SSOEmailValidity getEmailValidity() {
+        return emailValidity;
     }
 
-    public void setEmailValidated(SSOEmailValidity emailValidated) {
-        this.emailValidated = emailValidated;
+    void setEmailValidity(SSOEmailValidity emailValidity) {
+        this.emailValidity = emailValidity;
     }
 
     public String getFirstName() {
         return firstName;
     }
 
-    public void setFirstName(String firstName) {
+    void setFirstName(String firstName) {
         this.firstName = firstName;
     }
 
@@ -55,7 +55,7 @@ public class SSOCookie {
         return lastName;
     }
 
-    public void setLastName(String lastName) {
+    void setLastName(String lastName) {
         this.lastName = lastName;
     }
 
@@ -63,7 +63,7 @@ public class SSOCookie {
         return antiAbuseToken;
     }
 
-    public void setAntiAbuseToken(String antiAbuseToken) {
+    void setAntiAbuseToken(String antiAbuseToken) {
         this.antiAbuseToken = antiAbuseToken;
     }
 
@@ -71,7 +71,7 @@ public class SSOCookie {
         return ticketId;
     }
 
-    public void setTicketId(String ticketId) {
+    void setTicketId(String ticketId) {
         this.ticketId = ticketId;
     }
 }

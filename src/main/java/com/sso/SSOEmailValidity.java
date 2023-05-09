@@ -2,6 +2,6 @@ package com.sso;
 
 public enum SSOEmailValidity {
 
-    valid,invalid
+    valid, invalid
 
 }
