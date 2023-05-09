@@ -22,6 +22,13 @@ public class SSOCookieReader {
         sso_token, _hs_sso, tmsso, engsso
     }
 
+    /*
+    The new cookie is Base64 encoded
+    This is the json structure after decode
+    {"userId":"","userMail":"","ticketId":"","firstName":"","lastName":"","emailValidity":"valid/invalid",
+     "userType":"paying/registered","antiAbuseToken":"","r":"","p":"}
+     */
+
     public static SSOCookie read(HttpServletRequest request) {
 
         try {
