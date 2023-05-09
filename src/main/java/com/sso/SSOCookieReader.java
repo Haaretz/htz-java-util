@@ -30,14 +30,23 @@ public class SSOCookieReader {
      */
 
     public static SSOCookie read(HttpServletRequest request) {
+        try {
+            return read(request.getCookies());
+        } catch (Exception e) {
+            LOGGER.error("failed to read sso cookie", e);
+        }
+        return null;
+    }
+
+    public static SSOCookie read(Cookie[] cookies) {
 
         try {
-            Cookie cookie = getCookie(request);
+            Cookie cookie = getCookie(cookies);
             if (cookie != null && cookie.getValue() != null && !cookie.getValue().isEmpty()) {
                 if (cookie.getName().equals(sso_token.name())) {
                     return parseNewFormat(cookie.getValue());
                 } else {
-                    return parseOldFormat(cookie.getValue(), request);
+                    return parseOldFormat(cookie.getValue(), cookies);
                 }
             }
 
@@ -47,8 +56,7 @@ public class SSOCookieReader {
         return null;
     }
 
-    private static Cookie getCookie(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
+    private static Cookie getCookie(Cookie[] cookies) {
         if (cookies != null) {
             for (CookieNames cookieName : CookieNames.values()) {
                 for (Cookie cookie : cookies) {
@@ -61,7 +69,7 @@ public class SSOCookieReader {
         return null;
     }
 
-    private static SSOCookie parseOldFormat(String cookieValue, HttpServletRequest request) {
+    private static SSOCookie parseOldFormat(String cookieValue, Cookie[] cookies) {
 
         cookieValue = URLDecoder.decode(cookieValue, StandardCharsets.UTF_8);
         SSOCookie ssoCookie = new SSOCookie();
@@ -96,7 +104,7 @@ public class SSOCookieReader {
         }
 
         ssoCookie.setUserType(registered);
-        for (Cookie cookie : request.getCookies()) {
+        for (Cookie cookie : cookies) {
             if (cookie.getName().endsWith("Pusr")) {
                 ssoCookie.setUserType(paying);
                 break;
