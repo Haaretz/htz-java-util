@@ -141,7 +141,7 @@ public class SSOCookieReader {
     }
 
     private static String getString(JSONObject json, String key) {
-        return json.has(key) ? json.getString(key) : null;
+        return json.has(key) && !json.isNull(key) ? json.getString(key) : null;
     }
 
 }
