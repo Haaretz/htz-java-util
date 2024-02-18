@@ -2,6 +2,7 @@ package com.sso;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Base64;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -36,6 +37,15 @@ public class SSOCookieReader {
             LOGGER.error("failed to read sso cookie", e);
         }
         return null;
+    }
+
+    public static SSOCookie read(jakarta.servlet.http.HttpServletRequest request) {
+        return read(
+                Arrays.stream(request.getCookies())
+                        .map(jakartaCookie ->
+                                new Cookie(jakartaCookie.getName(), jakartaCookie.getValue()))
+                        .toArray(Cookie[]::new)
+        );
     }
 
     public static SSOCookie read(Cookie[] cookies) {
