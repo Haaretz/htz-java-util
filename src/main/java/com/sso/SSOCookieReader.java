@@ -61,7 +61,8 @@ public class SSOCookieReader {
             }
 
         } catch (Exception e) {
-            LOGGER.error("failed to read sso cookie", e);
+            LOGGER.error("failed to read sso cookie");
+            //LOGGER.debug("failed to read sso cookie", e);
         }
         return null;
     }
