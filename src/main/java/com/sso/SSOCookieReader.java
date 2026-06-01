@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpCookie;
 
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -40,12 +41,29 @@ public class SSOCookieReader {
     }
 
     public static SSOCookie read(jakarta.servlet.http.HttpServletRequest request) {
-        return read(
-                Arrays.stream(request.getCookies())
-                        .map(jakartaCookie ->
-                                new Cookie(jakartaCookie.getName(), jakartaCookie.getValue()))
-                        .toArray(Cookie[]::new)
-        );
+        try {
+            jakarta.servlet.http.Cookie[] cookies = request.getCookies();
+            return read(cookies);
+        } catch (Exception e) {
+            LOGGER.error("failed to read sso cookie from jakarta request", e);
+        }
+        return null;
+    }
+
+    public static SSOCookie read(jakarta.servlet.http.Cookie[] cookies) {
+        try {
+            jakarta.servlet.http.Cookie cookie = getJakartaCookie(cookies);
+            if (cookie != null && cookie.getValue() != null && !cookie.getValue().isEmpty()) {
+                if (cookie.getName().equals(sso_token.name())) {
+                    return parseNewFormat(cookie.getValue());
+                } else {
+                    return parseOldFormat(cookie.getValue(), cookies);
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.error("failed to read sso cookie");
+        }
+        return null;
     }
 
     public static SSOCookie read(Cookie[] cookies) {
@@ -71,6 +89,19 @@ public class SSOCookieReader {
         if (cookies != null) {
             for (CookieNames cookieName : CookieNames.values()) {
                 for (Cookie cookie : cookies) {
+                    if (cookie.getName().equalsIgnoreCase(cookieName.name())) {
+                        return cookie;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private static jakarta.servlet.http.Cookie getJakartaCookie(jakarta.servlet.http.Cookie[] cookies) {
+        if (cookies != null) {
+            for (CookieNames cookieName : CookieNames.values()) {
+                for (jakarta.servlet.http.Cookie cookie : cookies) {
                     if (cookie.getName().equalsIgnoreCase(cookieName.name())) {
                         return cookie;
                     }
@@ -116,6 +147,51 @@ public class SSOCookieReader {
 
         ssoCookie.setUserType(registered);
         for (Cookie cookie : cookies) {
+            if (cookie.getName().endsWith("Pusr")) {
+                ssoCookie.setUserType(paying);
+                break;
+            }
+        }
+
+        return ssoCookie;
+    }
+
+    private static SSOCookie parseOldFormat(String cookieValue, jakarta.servlet.http.Cookie[] cookies) {
+
+        cookieValue = URLDecoder.decode(cookieValue, StandardCharsets.UTF_8);
+        SSOCookie ssoCookie = new SSOCookie();
+
+        String[] fields = cookieValue.split(":");
+        for (String field : fields) {
+            String key = field.split("=")[0];
+            String value = field.split("=")[1];
+            switch (key) {
+                case "userId":
+                    ssoCookie.setUserId(value);
+                    break;
+                case "userName":
+                    ssoCookie.setUserMail(value);
+                    break;
+                case "ticketId":
+                    ssoCookie.setTicketId(value);
+                    break;
+                case "firstName":
+                    ssoCookie.setFirstName(value);
+                    break;
+                case "lastName":
+                    ssoCookie.setLastName(value);
+                    break;
+                case "emailValidity":
+                    ssoCookie.setEmailValidity(SSOEmailValidity.valueOf(value));
+                    break;
+                case "antiAbuseToken":
+                    ssoCookie.setAntiAbuseToken(value);
+                    break;
+            }
+        }
+
+        ssoCookie.setUserType(registered);
+        for (jakarta.servlet.http.Cookie cookie : cookies) {
             if (cookie.getName().endsWith("Pusr")) {
                 ssoCookie.setUserType(paying);
                 break;
