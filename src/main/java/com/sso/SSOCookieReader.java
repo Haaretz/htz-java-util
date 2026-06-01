@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.Base64;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpCookie;
 
 import org.json.JSONObject;
 import org.slf4j.Logger;
