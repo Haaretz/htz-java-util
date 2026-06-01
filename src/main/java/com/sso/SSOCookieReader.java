@@ -2,10 +2,9 @@ package com.sso;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Base64;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -39,34 +38,16 @@ public class SSOCookieReader {
         return null;
     }
 
-    public static SSOCookie read(jakarta.servlet.http.HttpServletRequest request) {
+    public static SSOCookie read(javax.servlet.http.HttpServletRequest request) {
         try {
-            jakarta.servlet.http.Cookie[] cookies = request.getCookies();
-            return read(cookies);
+            return read(request.getCookies());
         } catch (Exception e) {
-            LOGGER.error("failed to read sso cookie from jakarta request", e);
-        }
-        return null;
-    }
-
-    public static SSOCookie read(jakarta.servlet.http.Cookie[] cookies) {
-        try {
-            jakarta.servlet.http.Cookie cookie = getJakartaCookie(cookies);
-            if (cookie != null && cookie.getValue() != null && !cookie.getValue().isEmpty()) {
-                if (cookie.getName().equals(sso_token.name())) {
-                    return parseNewFormat(cookie.getValue());
-                } else {
-                    return parseOldFormat(cookie.getValue(), cookies);
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.error("failed to read sso cookie");
+            LOGGER.error("failed to read sso cookie", e);
         }
         return null;
     }
 
     public static SSOCookie read(Cookie[] cookies) {
-
         try {
             Cookie cookie = getCookie(cookies);
             if (cookie != null && cookie.getValue() != null && !cookie.getValue().isEmpty()) {
@@ -76,10 +57,24 @@ public class SSOCookieReader {
                     return parseOldFormat(cookie.getValue(), cookies);
                 }
             }
-
         } catch (Exception e) {
             LOGGER.error("failed to read sso cookie");
-            //LOGGER.debug("failed to read sso cookie", e);
+        }
+        return null;
+    }
+
+    public static SSOCookie read(javax.servlet.http.Cookie[] cookies) {
+        try {
+            javax.servlet.http.Cookie cookie = getCookieJavax(cookies);
+            if (cookie != null && cookie.getValue() != null && !cookie.getValue().isEmpty()) {
+                if (cookie.getName().equals(sso_token.name())) {
+                    return parseNewFormat(cookie.getValue());
+                } else {
+                    return parseOldFormatJavax(cookie.getValue(), cookies);
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.error("failed to read sso cookie");
         }
         return null;
     }
@@ -97,10 +92,10 @@ public class SSOCookieReader {
         return null;
     }
 
-    private static jakarta.servlet.http.Cookie getJakartaCookie(jakarta.servlet.http.Cookie[] cookies) {
+    private static javax.servlet.http.Cookie getCookieJavax(javax.servlet.http.Cookie[] cookies) {
         if (cookies != null) {
             for (CookieNames cookieName : CookieNames.values()) {
-                for (jakarta.servlet.http.Cookie cookie : cookies) {
+                for (javax.servlet.http.Cookie cookie : cookies) {
                     if (cookie.getName().equalsIgnoreCase(cookieName.name())) {
                         return cookie;
                     }
@@ -155,7 +150,7 @@ public class SSOCookieReader {
         return ssoCookie;
     }
 
-    private static SSOCookie parseOldFormat(String cookieValue, jakarta.servlet.http.Cookie[] cookies) {
+    private static SSOCookie parseOldFormatJavax(String cookieValue, javax.servlet.http.Cookie[] cookies) {
 
         cookieValue = URLDecoder.decode(cookieValue, StandardCharsets.UTF_8);
         SSOCookie ssoCookie = new SSOCookie();
@@ -190,7 +185,7 @@ public class SSOCookieReader {
         }
 
         ssoCookie.setUserType(registered);
-        for (jakarta.servlet.http.Cookie cookie : cookies) {
+        for (javax.servlet.http.Cookie cookie : cookies) {
             if (cookie.getName().endsWith("Pusr")) {
                 ssoCookie.setUserType(paying);
                 break;
