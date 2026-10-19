@@ -17,13 +17,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Calls to OpenAI / Gemini / Claude chat APIs, retried with exponential backoff.
+ * Calls to OpenAI / Grok / Gemini / Claude chat APIs, retried with exponential backoff.
  * <p>
  * The response text is returned as-is. On failure the raw response body is returned instead, with
  * {@code - "httpError":<status>} appended for non-200 responses and 200 responses with an {@code error} body,
  * or {@code - "aiError":"no text in response"} when a 200 response holds no text (e.g. a refusal or safety block)
  * - use {@link #isError(String)} to detect it.
- * Plain Java on purpose: every service supplies its own API token.
+ * Plain Java on purpose. The API key is passed in, or read from the provider's system property / environment
+ * variable ({@code OPENAI_API_KEY}, {@code GROK_API_KEY}, {@code GOOGLE_API_KEY}, {@code ANTHROPIC_API_KEY}) by the overloads without it.
  */
 public class AiClient {
 
@@ -39,6 +40,27 @@ public class AiClient {
     private static final Duration REQUEST_TIMEOUT = Duration.ofMinutes(5);
 
     private AiClient() {
+    }
+
+    /**
+     * {@link #callAi(String, String, Number, String, int)} with {@link #DEFAULT_MAX_ATTEMPTS}.
+     */
+    public static String callAi(String model, String prompt, Number temperature, String data)
+            throws IOException, InterruptedException {
+
+        return callAi(model, prompt, temperature, data, DEFAULT_MAX_ATTEMPTS);
+    }
+
+    /**
+     * {@link #callAi(String, String, Number, String, String, int)} with the API key from the provider's system
+     * property or environment variable (see {@link AiProvider#apiKey()}).
+     *
+     * @throws IllegalStateException when the key isn't set
+     */
+    public static String callAi(String model, String prompt, Number temperature, String data, int maxAttempts)
+            throws IOException, InterruptedException {
+
+        return callAi(model, prompt, temperature, data, AiProvider.fromModel(model).apiKey(), maxAttempts);
     }
 
     /**
@@ -58,7 +80,7 @@ public class AiClient {
      * @param prompt      system prompt / instructions
      * @param temperature optional, {@code null} for the provider default
      * @param data        optional user content, {@code null} to send the prompt only
-     * @param apiToken    API token of the model's provider (for OpenAI, the full Authorization header value)
+     * @param apiToken    API key of the model's provider (for OpenAI / Grok a {@code Bearer } prefix is optional)
      * @param maxAttempts total attempts, at least 1
      * @return the last result - check it with {@link #isError(String)}
      * @throws IOException when the last attempt failed with an I/O error
@@ -92,7 +114,11 @@ public class AiClient {
 
         switch (provider) {
             case OPENAI:
-                return callGpt(model, prompt, temperature, data, apiToken);
+                return callChatCompletions("https://api.openai.com/v1/chat/completions",
+                        model, prompt, temperature, data, apiToken);
+            case GROK:
+                return callChatCompletions("https://api.x.ai/v1/chat/completions",
+                        model, prompt, temperature, data, apiToken);
             case GEMINI:
                 return callGemini(model, prompt, temperature, data, apiToken);
             case CLAUDE:
@@ -106,8 +132,9 @@ public class AiClient {
         return result.contains("\"error\":") || result.contains("\"httpError\":") || result.contains("\"aiError\":");
     }
 
-    private static String callGpt(String model, String prompt, Number temperature, String data, String apiToken)
-            throws IOException, InterruptedException {
+    /** OpenAI chat completions format, also served by xAI (Grok). */
+    private static String callChatCompletions(String url, String model, String prompt, Number temperature, String data,
+                                              String apiToken) throws IOException, InterruptedException {
 
         JSONObject json = new JSONObject();
         json.put("model", model);
@@ -131,8 +158,8 @@ public class AiClient {
             json.put("temperature", temperature);
         }
 
-        HttpRequest request = jsonPost("https://api.openai.com/v1/chat/completions", json)
-                .header("Authorization", apiToken)
+        HttpRequest request = jsonPost(url, json)
+                .header("Authorization", apiToken.startsWith("Bearer ") ? apiToken : "Bearer " + apiToken)
                 .build();
 
         return send(request, res -> res.getJSONArray("choices").getJSONObject(0)
