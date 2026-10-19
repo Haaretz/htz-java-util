@@ -6,7 +6,8 @@ package com.htz.ai;
 public enum AiProvider {
 
     OPENAI("gpt", "OPENAI_API_KEY"),
-    GEMINI("gemini", "GEMINI_API_KEY"),
+    GROK("grok", "GROK_API_KEY"),
+    GEMINI("gemini", "GOOGLE_API_KEY"),
     CLAUDE("claude", "ANTHROPIC_API_KEY");
 
     private final String modelPrefix;
