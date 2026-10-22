@@ -114,11 +114,10 @@ public class AiClient {
 
         switch (provider) {
             case OPENAI:
-                return callChatCompletions("https://api.openai.com/v1/chat/completions",
+                return callOpenAi("https://api.openai.com/v1/chat/completions",
                         model, prompt, temperature, data, apiToken);
             case GROK:
-                return callChatCompletions("https://api.x.ai/v1/chat/completions",
-                        model, prompt, temperature, data, apiToken);
+                throw new IOException("Grok provider not implemented yet");
             case GEMINI:
                 return callGemini(model, prompt, temperature, data, apiToken);
             case CLAUDE:
@@ -132,9 +131,11 @@ public class AiClient {
         return result.contains("\"error\":") || result.contains("\"httpError\":") || result.contains("\"aiError\":");
     }
 
-    /** OpenAI chat completions format, also served by xAI (Grok). */
-    private static String callChatCompletions(String url, String model, String prompt, Number temperature, String data,
-                                              String apiToken) throws IOException, InterruptedException {
+    /**
+     * OpenAI chat completions format
+     */
+    private static String callOpenAi(String url, String model, String prompt, Number temperature, String data,
+                                     String apiToken) throws IOException, InterruptedException {
 
         JSONObject json = new JSONObject();
         json.put("model", model);
@@ -198,7 +199,7 @@ public class AiClient {
 
         JSONObject postData = new JSONObject()
                 .put("model", model)
-                .put("max_tokens", 8192);
+                .put("max_tokens", 128000);
 
         String userText = prompt;
         if (data != null) {
@@ -222,7 +223,9 @@ public class AiClient {
         return send(request, AiClient::claudeText);
     }
 
-    /** Joins the text blocks, skipping thinking / tool_use blocks; {@code null} when there are none. */
+    /**
+     * Joins the text blocks, skipping thinking / tool_use blocks; {@code null} when there are none.
+     */
     private static String claudeText(JSONObject res) {
         StringBuilder text = null;
         JSONArray content = res.getJSONArray("content");
