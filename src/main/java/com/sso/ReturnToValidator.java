@@ -119,6 +119,11 @@ public class ReturnToValidator {
             if (uri.getRawUserInfo() != null || uri.getHost() == null) {
                 return false;
             }
+            // reject "https://haaretz.co.il//evil.com": a consumer redirecting to just the path gets "//evil.com"
+            String rawPath = uri.getRawPath();
+            if (rawPath != null && rawPath.startsWith("//")) {
+                return false;
+            }
             return isAllowedHost(uri.getHost());
         } catch (Exception e) {
             return false;

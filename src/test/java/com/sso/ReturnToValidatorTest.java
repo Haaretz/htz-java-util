@@ -50,7 +50,11 @@ public class ReturnToValidatorTest {
             "/%5Cevil.com",
             "/%252F%252Fevil.com",
             "/%0d%0afake-log-line",
-            "https://evil.com%2F.haaretz.co.il"
+            "https://evil.com%2F.haaretz.co.il",
+            "https://login.haaretz.co.il//google.com",
+            "https://www.haaretz.co.il///evil.com/x",
+            "https://www.haaretz.co.il/%2Fevil.com",
+            "https://www.haaretz.co.il/%252Fevil.com"
     };
 
     @Test
